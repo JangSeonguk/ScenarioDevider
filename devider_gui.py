@@ -9,32 +9,36 @@ import socket
 #host 이름 가져오기
 def host_name():
     host = socket.gethostname()
-    host_name = host.split('-')[0]
-    return host_name
+    # host_name = host.split('-')[0]
+    return host
 
 #시나리오 파일 찾기
 def add_file():
     global file
+    global file_path
     host = host_name()
-    print(f'C:/user/{host}/desktop')
-    file = filedialog.askopenfilename(title='ScenarioSet 파일을 선택해주세요.',filetypes=(("call files", "*.call"),("all files", "*.*")),initialdir=f'C:/user/{host}/desktop')
+    iniDir = "C:/Users/"+host+"/Desktop/"
+    print(iniDir)
+    file = filedialog.askopenfilename(title='ScenarioSet 파일을 선택해주세요.',filetypes=(("call files", "*.call"),("all files", "*.*")),initialdir=iniDir)
+    file_path =os.path.dirname(file)
     if file != '':
-        file_check(file)
-        if file_check == True:
+        file_check()
+        if file_check() == True:
             text_file_path.insert(END,file)
-            scenario_list_view(file)
+            scenario_list_view()
 
 #파일 확장자 확인
-def file_check(file):
+def file_check():
     extention = os.path.splitext(file)
-    if extention != '.call':
+
+    if extention[1] != '.call':
         msgbox.showerror('Error','ScenarioSet.call 파일만 사용가능합니다.')
         return False
     else:
         return True
 
 #시나리오 파일 확인
-def scenario_list_view(file):
+def scenario_list_view():
     scenarioFile = open(file,'r')
     readScenario = scenarioFile.read()
     devideScenario = readScenario.split('[')
@@ -45,7 +49,7 @@ def scenario_list_view(file):
             if 'ScenarioName' in line:
                 need = line.split('=')
                 need_name = need[1]
-                print(need_name)
+                print(file_path+f'{need_name}.call')
                 list_file.insert(END,need_name)
             
     scenarioFile.close()
@@ -66,13 +70,15 @@ def devide_scenario():
             if 'ScenarioName' in line:
                 need = line.split('=')
                 need_name = need[1]
-                new = open(f'{need_name}.call','w')
+                new = open(file_path+'/'+f'{need_name}.call','w')
                 new.write('['+scenario)
-            
-
             
     scenarioFile.close()
     finishInfo()
+    quit()
+
+def quit():
+    root.destroy()
     
 
 root=Tk()
@@ -104,6 +110,6 @@ scroll.config(command=list_file.yview)
 
 # 시나리오 분할 버튼
 start_btn = Button(root,text='진행',command=devide_scenario)
-start_btn.pack()
+start_btn.pack(padx=5,pady=5,ipadx=5,ipady=5)
 
 root.mainloop()
